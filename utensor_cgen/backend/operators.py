@@ -5,10 +5,13 @@ import idx2numpy as idx2np
 import numpy as np
 
 from utensor_cgen.logger import logger
+from utensor_cgen.matcher import OpEqualityDelegate
 from utensor_cgen.transformer.optimizer import RefCntOptimizer
 from utensor_cgen.utils import NamescopedKWArgsParser
 
 from .snippets import *  # pylint: disable=W0401,W0614
+
+__all__ = ['OperatorFactory']
 
 
 class OperatorFactory():
@@ -46,6 +49,9 @@ class _Operator(object):
 
 
 @OperatorFactory.register
+@OpEqualityDelegate.is_associative(
+  permutations=[(0, 1), (1, 0)]
+)
 class _AddOperator(_Operator):
 
   op_type = "Add" # tf op type
@@ -341,6 +347,7 @@ class _Conv2DOperator(_Operator):
 
 
 @OperatorFactory.register
+@OpEqualityDelegate.is_compatible_with("Inline")
 class _ConstOperator(_Operator):
 
   op_type = "Const"
@@ -381,6 +388,7 @@ class _ConstOperator(_Operator):
 
 
 @OperatorFactory.register
+@OpEqualityDelegate.is_compatible_with("Const")
 class _InlineOperator(_Operator):
 
   op_type = "Inline"
